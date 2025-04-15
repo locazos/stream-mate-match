@@ -1,9 +1,9 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap');
 
 @layer base {
   :root {
@@ -43,11 +43,11 @@
   }
 
   body {
-    @apply bg-background text-foreground font-[Inter];
+    @apply bg-background text-foreground font-jakarta antialiased;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-[Poppins] font-semibold;
+    @apply font-space font-semibold tracking-tight;
   }
 }
 
@@ -63,4 +63,9 @@
   .gradient-bg {
     background: linear-gradient(135deg, #9146FF 0%, #772CE8 100%);
   }
+
+  .glass-effect {
+    @apply bg-white/5 backdrop-blur-lg border border-white/10;
+  }
 }
+
