@@ -11,6 +11,8 @@ import Matches from "./pages/Matches";
 import Profile from "./pages/Profile";
 import Welcome from "./pages/Welcome";
 import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth";
+import AuthGuard from "./components/Layout/AuthGuard";
 
 const queryClient = new QueryClient();
 
@@ -23,26 +25,33 @@ const App = () => (
         <div className="bg-app-dark text-app-light min-h-screen">
           <Routes>
             <Route path="/welcome" element={<Welcome />} />
+            <Route path="/auth" element={<Auth />} />
             <Route path="/" element={
-              <>
-                <Navbar />
-                <Home />
-                <BottomNav />
-              </>
+              <AuthGuard>
+                <>
+                  <Navbar />
+                  <Home />
+                  <BottomNav />
+                </>
+              </AuthGuard>
             } />
             <Route path="/matches" element={
-              <>
-                <Navbar />
-                <Matches />
-                <BottomNav />
-              </>
+              <AuthGuard>
+                <>
+                  <Navbar />
+                  <Matches />
+                  <BottomNav />
+                </>
+              </AuthGuard>
             } />
             <Route path="/profile" element={
-              <>
-                <Navbar />
-                <Profile />
-                <BottomNav />
-              </>
+              <AuthGuard>
+                <>
+                  <Navbar />
+                  <Profile />
+                  <BottomNav />
+                </>
+              </AuthGuard>
             } />
             <Route path="*" element={<NotFound />} />
           </Routes>
