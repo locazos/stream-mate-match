@@ -9,33 +9,87 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      matches: {
+        Row: {
+          id: string
+          matched_at: string
+          user_a: string
+          user_b: string
+        }
+        Insert: {
+          id?: string
+          matched_at?: string
+          user_a: string
+          user_b: string
+        }
+        Update: {
+          id?: string
+          matched_at?: string
+          user_a?: string
+          user_b?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
+          availability: string | null
           avatar_url: string | null
           created_at: string
           description: string | null
           games: string[] | null
           id: string
+          language: string | null
+          timezone: string | null
           updated_at: string
           username: string | null
         }
         Insert: {
+          availability?: string | null
           avatar_url?: string | null
           created_at?: string
           description?: string | null
           games?: string[] | null
           id: string
+          language?: string | null
+          timezone?: string | null
           updated_at?: string
           username?: string | null
         }
         Update: {
+          availability?: string | null
           avatar_url?: string | null
           created_at?: string
           description?: string | null
           games?: string[] | null
           id?: string
+          language?: string | null
+          timezone?: string | null
           updated_at?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      swipes: {
+        Row: {
+          created_at: string
+          direction: string
+          id: string
+          swiper_id: string
+          target_id: string
+        }
+        Insert: {
+          created_at?: string
+          direction: string
+          id?: string
+          swiper_id: string
+          target_id: string
+        }
+        Update: {
+          created_at?: string
+          direction?: string
+          id?: string
+          swiper_id?: string
+          target_id?: string
         }
         Relationships: []
       }
