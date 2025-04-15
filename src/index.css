@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Orbitron:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,23 +7,23 @@
 
 @layer base {
   :root {
-    --background: 260 13% 12%;
+    --background: 240 10% 4%;
     --foreground: 0 0% 98%;
 
-    --card: 260 11% 15%;
+    --card: 240 11% 9%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 260 11% 15%;
+    --popover: 240 11% 9%;
     --popover-foreground: 0 0% 98%;
 
     --primary: 271 100% 64%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 260 11% 20%;
+    --secondary: 240 11% 12%;
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 260 20% 20%;
-    --muted-foreground: 0 0% 70%;
+    --muted: 240 10% 15%;
+    --muted-foreground: 240 5% 75%;
 
     --accent: 182 100% 50%;
     --accent-foreground: 0 0% 0%;
@@ -31,9 +31,9 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 260 15% 25%;
-    --input: 260 15% 25%;
-    --ring: 262 100% 64%;
+    --border: 240 10% 20%;
+    --input: 240 10% 20%;
+    --ring: 271 100% 64%;
 
     --radius: 0.75rem;
   }
@@ -43,29 +43,53 @@
   }
 
   body {
-    @apply bg-background text-foreground font-jakarta antialiased;
+    @apply bg-app-dark text-app-light font-jakarta antialiased;
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%239146FF' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-space font-semibold tracking-tight;
+  h1, h2, h3 {
+    @apply font-space font-bold tracking-tight;
+  }
+
+  h4, h5, h6 {
+    @apply font-chakra font-semibold;
   }
 }
 
 @layer utilities {
-  .card-shadow {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  .gradient-purple {
+    @apply bg-gradient-to-r from-twitch via-twitch-dark to-purple-700;
   }
   
-  .text-shadow {
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  }
-  
-  .gradient-bg {
-    background: linear-gradient(135deg, #9146FF 0%, #772CE8 100%);
+  .gradient-neon {
+    @apply bg-gradient-to-r from-neon-teal via-twitch to-neon-pink;
   }
 
-  .glass-effect {
-    @apply bg-white/5 backdrop-blur-lg border border-white/10;
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+  }
+  
+  .glass-card {
+    @apply backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl;
+  }
+  
+  .glow-effect {
+    @apply shadow-glow;
+  }
+
+  .neon-border {
+    @apply border border-neon-teal/50;
+  }
+  
+  .card-hover {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-glow;
+  }
+  
+  .button-hover {
+    @apply transition-all duration-200 ease-in-out hover:scale-105 active:scale-95;
+  }
+
+  .text-shadow {
+    text-shadow: 0 0 10px rgba(145, 70, 255, 0.5);
   }
 }
-

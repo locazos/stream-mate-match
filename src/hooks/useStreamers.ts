@@ -1,44 +1,54 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Streamer, mockStreamers, mockMatches } from '../data/streamers';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/components/ui/sonner';
 
 export const useStreamers = () => {
   const [streamers, setStreamers] = useState<Streamer[]>([...mockStreamers]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [matches, setMatches] = useState<Streamer[]>([...mockMatches]);
-  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
   
   const currentStreamer = streamers[currentIndex];
   
+  useEffect(() => {
+    // Simular carga de datos
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
   const handleSwipeRight = (id: string) => {
-    // In a real app, this would make an API call to record the match
-    toast({
-      title: "It's a match!",
-      description: `You matched with ${currentStreamer.name}. Start a conversation!`,
+    // En una app real, esto haría una llamada a la API para registrar el match
+    toast.success("¡Es un match!", {
+      description: `Has conectado con ${currentStreamer.name}. ¡Inicia una conversación!`,
+      position: "bottom-center",
     });
     
-    // Add to matches
+    // Añadir a matches
     setMatches(prev => [currentStreamer, ...prev]);
     
-    // Move to next streamer
+    // Pasar al siguiente streamer
     handleNextStreamer();
   };
   
   const handleSwipeLeft = (id: string) => {
-    // Move to next streamer
+    // Pasar al siguiente streamer
     handleNextStreamer();
   };
   
   const handleNextStreamer = () => {
-    // If we've gone through all streamers, reset
+    // Si hemos pasado por todos los streamers, resetear
     if (currentIndex >= streamers.length - 1) {
-      // In a real app, we would fetch more streamers
-      toast({
-        title: "That's everyone for now!",
-        description: "Check back later for more potential stream partners.",
+      // En una app real, obtendríamos más streamers
+      toast.info("¡Eso es todo por ahora!", {
+        description: "Revisa más tarde para ver nuevos compañeros potenciales.",
+        position: "bottom-center",
       });
-      // For demo purposes, we'll reset the index
+      
+      // Para fines de demostración, reiniciaremos el índice
       setCurrentIndex(0);
       return;
     }
@@ -50,6 +60,7 @@ export const useStreamers = () => {
     streamers,
     currentStreamer,
     matches,
+    isLoading,
     handleSwipeRight,
     handleSwipeLeft,
   };
