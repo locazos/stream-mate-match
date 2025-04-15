@@ -10,6 +10,8 @@ export interface Streamer {
   schedule: string;
   lookingFor: string[];
   matchPercentage: number;
+  achievements?: string[];
+  strengths?: string[];
 }
 
 export const mockStreamers: Streamer[] = [

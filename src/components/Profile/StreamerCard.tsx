@@ -110,7 +110,7 @@ const StreamerCard: React.FC<StreamerCardProps> = ({ streamer, onSwipeRight, onS
             </div>
           </div>
           
-          {streamer.achievements && (
+          {streamer.achievements && streamer.achievements.length > 0 && (
             <div className="mb-4">
               <h3 className="font-chakra text-neon-pink mb-2 flex items-center gap-2">
                 <Award size={16} />
@@ -130,7 +130,7 @@ const StreamerCard: React.FC<StreamerCardProps> = ({ streamer, onSwipeRight, onS
             </div>
           )}
           
-          {streamer.strengths && (
+          {streamer.strengths && streamer.strengths.length > 0 && (
             <div className="mb-4">
               <h3 className="font-chakra text-neon-teal mb-2 flex items-center gap-2">
                 <ThumbsUp size={16} />

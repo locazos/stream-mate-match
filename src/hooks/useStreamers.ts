@@ -4,6 +4,18 @@ import { Streamer, mockStreamers, mockMatches } from '../data/streamers';
 import { toast } from '@/components/ui/sonner';
 
 export const useStreamers = () => {
+  // Add some example achievements and strengths to the first streamer for demonstration
+  if (mockStreamers.length > 0 && !mockStreamers[0].achievements) {
+    mockStreamers[0].achievements = ["Twitch Partner 2023", "Speedrun Champion", "24h Stream"];
+    mockStreamers[0].strengths = ["Entretenimiento", "Humor", "Interacción"];
+    
+    // Add some to the second streamer as well
+    if (mockStreamers.length > 1) {
+      mockStreamers[1].achievements = ["Esports Pro", "100K Followers"];
+      mockStreamers[1].strengths = ["Competitivo", "Estrategia", "Coaching"];
+    }
+  }
+  
   const [streamers, setStreamers] = useState<Streamer[]>([...mockStreamers]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [matches, setMatches] = useState<Streamer[]>([...mockMatches]);
