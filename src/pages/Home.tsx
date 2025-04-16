@@ -20,7 +20,7 @@ const Home: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center py-20 px-4">
+      <div className="flex-1 flex flex-col items-center justify-center py-20 px-4">
         <div className="glass-card p-8 flex flex-col items-center">
           <Loader2 size={40} className="text-twitch mb-4 animate-spin" />
           <h3 className="text-xl font-orbitron mb-2">Loading streamers</h3>
@@ -35,7 +35,7 @@ const Home: React.FC = () => {
   if (!currentProfile) {
     return (
       <motion.div 
-        className="min-h-screen flex flex-col items-center justify-center py-20 px-4"
+        className="flex-1 flex flex-col items-center justify-center py-20 px-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -67,17 +67,17 @@ const Home: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen pt-16 pb-24 px-4 relative">
+    <div className="flex-1 flex flex-col px-4 overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 bg-gradient-to-b from-app-dark via-app-gray to-app-dark z-0" />
       <div className="absolute inset-0 bg-[linear-gradient(rgba(145,70,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(145,70,255,0.03)_1px,transparent_1px)] bg-[size:30px_30px] z-0" />
       
-      <div className="container max-w-md mx-auto relative z-10">
+      <div className="container max-w-md mx-auto relative z-10 flex flex-col flex-1">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="mt-4 mb-6 text-center"
+          className="py-4 text-center"
         >
           <h1 className="text-3xl font-orbitron gradient-text gradient-neon">Find matches</h1>
           <p className="text-app-text">Swipe to discover your next collaborator</p>
@@ -88,7 +88,7 @@ const Home: React.FC = () => {
           </p>
         </motion.div>
         
-        <div className="relative h-[720px]">
+        <div className="flex-1 flex items-center justify-center min-h-0">
           <StreamerCard 
             profile={currentProfile}
             onSwipeRight={(id) => handleSwipe(id, 'right')}

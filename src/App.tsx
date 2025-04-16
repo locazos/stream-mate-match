@@ -22,35 +22,35 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <div className="bg-app-dark text-app-light min-h-screen">
+        <div className="bg-app-dark text-app-light min-h-screen flex flex-col">
           <Routes>
             <Route path="/welcome" element={<Welcome />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/" element={
               <AuthGuard>
-                <>
+                <div className="flex flex-col min-h-screen pt-[72px] pb-[80px]">
                   <Navbar />
                   <Home />
                   <BottomNav />
-                </>
+                </div>
               </AuthGuard>
             } />
             <Route path="/matches" element={
               <AuthGuard>
-                <>
+                <div className="flex flex-col min-h-screen pt-[72px] pb-[80px]">
                   <Navbar />
                   <Matches />
                   <BottomNav />
-                </>
+                </div>
               </AuthGuard>
             } />
             <Route path="/profile" element={
               <AuthGuard>
-                <>
+                <div className="flex flex-col min-h-screen pt-[72px] pb-[80px]">
                   <Navbar />
                   <Profile />
                   <BottomNav />
-                </>
+                </div>
               </AuthGuard>
             } />
             <Route path="*" element={<NotFound />} />
