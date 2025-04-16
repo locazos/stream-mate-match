@@ -1,9 +1,9 @@
 
-import React from 'react';
-import { Heart, X, Gamepad2, Users, Calendar, ThumbsUp } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { Badge } from "@/components/ui/badge";
+import React, { useState } from 'react';
+import { Heart, X, Gamepad2, Users, Calendar } from 'lucide-react';
+import { motion, PanInfo, useAnimation } from 'framer-motion';
 import { Profile } from '@/hooks/useProfile';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface StreamerCardProps {
   profile: Profile;
@@ -12,12 +12,39 @@ interface StreamerCardProps {
 }
 
 const StreamerCard: React.FC<StreamerCardProps> = ({ profile, onSwipeRight, onSwipeLeft }) => {
+  const controls = useAnimation();
+  const isMobile = useIsMobile();
+  const [exitX, setExitX] = useState(0);
+
+  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const threshold = 100;
+    
+    if (info.offset.x > threshold) {
+      // Swiped right
+      setExitX(1000);
+      controls.start({ x: 1000, opacity: 0, transition: { duration: 0.5 } });
+      onSwipeRight(profile.id);
+    } else if (info.offset.x < -threshold) {
+      // Swiped left
+      setExitX(-1000);
+      controls.start({ x: -1000, opacity: 0, transition: { duration: 0.5 } });
+      onSwipeLeft(profile.id);
+    } else {
+      // Return to center if not swiped far enough
+      controls.start({ x: 0, opacity: 1, transition: { duration: 0.5 } });
+    }
+  };
+
   return (
     <motion.div 
-      className="glass-card shadow-card overflow-hidden rounded-xl"
+      className="glass-card shadow-card overflow-hidden rounded-xl cursor-grab active:cursor-grabbing"
       initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.3 }}
+      animate={controls}
+      drag={isMobile ? "x" : false}
+      dragConstraints={{ left: 0, right: 0 }}
+      dragElastic={0.9}
+      onDragEnd={handleDragEnd}
+      whileTap={{ scale: 0.98 }}
     >
       <div className="relative h-96">
         <img 

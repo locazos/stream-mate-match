@@ -81,6 +81,11 @@ const Home: React.FC = () => {
         >
           <h1 className="text-3xl font-orbitron gradient-text gradient-neon">Find matches</h1>
           <p className="text-app-text">Swipe to discover your next collaborator</p>
+          <p className="text-app-text text-xs mt-1 text-opacity-70">
+            <span className="hidden sm:inline">Click buttons or </span>
+            <span className="sm:hidden">Swipe cards </span>
+            to interact
+          </p>
         </motion.div>
         
         <div className="relative h-[720px]">
