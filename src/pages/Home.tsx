@@ -1,3 +1,4 @@
+
 import React from 'react';
 import StreamerCard from '../components/Profile/StreamerCard';
 import { useSwipe } from '../hooks/useSwipe';
@@ -5,17 +6,23 @@ import { useAuth } from '../hooks/useAuth';
 import { Loader2, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
+import { toast } from '@/components/ui/sonner';
 
 const Home: React.FC = () => {
   const { session } = useAuth();
   const { profiles, currentProfile, isLoading, fetchProfiles, handleSwipe } = 
-    useSwipe(session?.user.id || '');
+    useSwipe(session?.user?.id || '');
 
   React.useEffect(() => {
-    if (session?.user.id) {
+    if (session?.user?.id) {
       fetchProfiles();
     }
-  }, [session?.user.id]);
+  }, [session?.user?.id]);
+  
+  // Debug logging to see what's happening with profiles
+  React.useEffect(() => {
+    console.log('Current profile state:', { currentProfile, profilesCount: profiles.length });
+  }, [currentProfile, profiles]);
 
   if (isLoading) {
     return (
@@ -90,35 +97,12 @@ const Home: React.FC = () => {
         </motion.div>
         
         <div className="flex-1 flex items-center justify-center min-h-0">
-          {currentProfile ? (
+          {currentProfile && (
             <StreamerCard 
               profile={currentProfile}
               onSwipeRight={(id) => handleSwipe(id, 'right')}
               onSwipeLeft={(id) => handleSwipe(id, 'left')}
             />
-          ) : (
-            <motion.div 
-              className="glass-card p-8 flex flex-col items-center shadow-card"
-              initial={{ scale: 0.95 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, duration: 0.4 }}
-            >
-              <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-4">
-                <Search size={32} className="text-app-text" />
-              </div>
-              <h3 className="text-xl font-orbitron mb-2">No more streamers</h3>
-              <p className="text-app-text text-center max-w-xs mb-6">
-                You've seen all potential streaming partners for now. Check back later!
-              </p>
-              <Button 
-                onClick={fetchProfiles}
-                variant="outline" 
-                className="border-twitch/30 text-twitch hover:bg-twitch/10 button-hover flex items-center gap-2"
-              >
-                <Search size={16} />
-                <span>Refresh search</span>
-              </Button>
-            </motion.div>
           )}
         </div>
       </div>

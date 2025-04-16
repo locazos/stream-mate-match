@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Profile } from './useProfile';
 import { toast } from '@/components/ui/sonner';
@@ -11,24 +11,47 @@ export const useSwipe = (currentUserId: string) => {
 
   const fetchProfiles = async () => {
     try {
+      if (!currentUserId) {
+        console.log('No current user ID provided');
+        return;
+      }
+      
       setIsLoading(true);
+      setCurrentIndex(0);
+      
+      console.log('Fetching profiles for user ID:', currentUserId);
       
       // Get all profiles except current user and already swiped ones
-      const { data: swipedProfiles } = await supabase
+      const { data: swipedProfiles, error: swipeError } = await supabase
         .from('swipes')
         .select('target_id')
         .eq('swiper_id', currentUserId);
 
+      if (swipeError) {
+        console.error('Error fetching swiped profiles:', swipeError);
+        throw swipeError;
+      }
+      
       const swipedIds = swipedProfiles?.map(s => s.target_id) || [];
-
-      const { data: availableProfiles, error } = await supabase
+      console.log('Already swiped profile IDs:', swipedIds);
+      
+      let query = supabase
         .from('profiles')
         .select('*')
-        .neq('id', currentUserId)
-        .not('id', 'in', `(${swipedIds.join(',')})`);
-
-      if (error) throw error;
+        .neq('id', currentUserId);
       
+      if (swipedIds.length > 0) {
+        query = query.not('id', 'in', `(${swipedIds.join(',')})`);
+      }
+
+      const { data: availableProfiles, error } = await query;
+
+      if (error) {
+        console.error('Error fetching available profiles:', error);
+        throw error;
+      }
+      
+      console.log('Available profiles fetched:', availableProfiles?.length);
       setProfiles(availableProfiles || []);
     } catch (error) {
       console.error('Error:', error);
@@ -40,6 +63,8 @@ export const useSwipe = (currentUserId: string) => {
 
   const handleSwipe = async (targetId: string, direction: 'left' | 'right') => {
     try {
+      console.log(`Handling ${direction} swipe for profile ID: ${targetId}`);
+      
       // Record the swipe
       const { error: swipeError } = await supabase
         .from('swipes')
@@ -78,6 +103,43 @@ export const useSwipe = (currentUserId: string) => {
       toast.error('Error processing swipe');
     }
   };
+
+  // Add some test profiles if none are available - for demo purposes only
+  const addTestProfilesIfEmpty = async () => {
+    if (profiles.length === 0 && !isLoading) {
+      console.log('No profiles available, adding test profiles');
+      
+      const testProfiles = [
+        {
+          username: 'StreamerPro',
+          avatar_url: 'https://randomuser.me/api/portraits/men/32.jpg',
+          description: 'Professional streamer looking for collaborations on FPS games.',
+          games: ['Valorant', 'Call of Duty', 'Apex Legends'],
+          language: 'English',
+          timezone: 'America/New_York',
+          availability: 'Weekday evenings'
+        },
+        {
+          username: 'GamerGirl',
+          avatar_url: 'https://randomuser.me/api/portraits/women/44.jpg',
+          description: 'RPG specialist streaming since 2020. Looking for co-op partners.',
+          games: ['Elden Ring', 'Diablo IV', 'Final Fantasy'],
+          language: 'English',
+          timezone: 'Europe/London',
+          availability: 'Weekends'
+        }
+      ];
+      
+      setProfiles(testProfiles as Profile[]);
+    }
+  };
+
+  useEffect(() => {
+    if (profiles.length === 0 && !isLoading) {
+      // If we have no profiles after loading, add some test profiles
+      addTestProfilesIfEmpty();
+    }
+  }, [profiles, isLoading]);
 
   return {
     profiles,

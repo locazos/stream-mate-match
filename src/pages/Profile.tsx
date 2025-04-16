@@ -1,9 +1,31 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import ProfileForm from '../components/Profile/ProfileForm';
 import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { LogOut } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/components/ui/sonner';
+import { useAuth } from '@/hooks/useAuth';
 
 const Profile: React.FC = () => {
+  const navigate = useNavigate();
+  const { session } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      toast.success('Logged out successfully');
+      navigate('/auth');
+    } catch (error) {
+      console.error('Error logging out:', error);
+      toast.error('Failed to log out');
+    }
+  };
+
   return (
     <div className="min-h-screen pt-16 pb-24 px-4 relative">
       {/* Animated background elements */}
@@ -27,8 +49,25 @@ const Profile: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
+          className="mb-6"
         >
           <ProfileForm />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+          className="mt-8 flex justify-center"
+        >
+          <Button 
+            onClick={handleLogout}
+            variant="outline" 
+            className="border-red-500/30 text-red-400 hover:bg-red-500/10 button-hover flex items-center gap-2"
+          >
+            <LogOut size={16} />
+            <span>Logout</span>
+          </Button>
         </motion.div>
       </div>
     </div>
