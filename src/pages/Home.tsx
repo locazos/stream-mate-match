@@ -1,4 +1,3 @@
-
 import React from 'react';
 import StreamerCard from '../components/Profile/StreamerCard';
 import { useSwipe } from '../hooks/useSwipe';
@@ -79,9 +78,11 @@ const Home: React.FC = () => {
           transition={{ duration: 0.5 }}
           className="py-4 text-center"
         >
-          <h1 className="text-3xl font-orbitron gradient-text gradient-neon">Find matches</h1>
+          <h1 className="text-3xl font-orbitron bg-gradient-to-r from-[#00FFFF] via-twitch to-[#ff4ecd] bg-clip-text text-transparent">
+            Find matches
+          </h1>
           <p className="text-app-text">Swipe to discover your next collaborator</p>
-          <p className="text-app-text text-xs mt-1 text-opacity-70">
+          <p className="text-app-text text-xs mt-1 opacity-70">
             <span className="hidden sm:inline">Click buttons or </span>
             <span className="sm:hidden">Swipe cards </span>
             to interact
@@ -89,11 +90,36 @@ const Home: React.FC = () => {
         </motion.div>
         
         <div className="flex-1 flex items-center justify-center min-h-0">
-          <StreamerCard 
-            profile={currentProfile}
-            onSwipeRight={(id) => handleSwipe(id, 'right')}
-            onSwipeLeft={(id) => handleSwipe(id, 'left')}
-          />
+          {currentProfile ? (
+            <StreamerCard 
+              profile={currentProfile}
+              onSwipeRight={(id) => handleSwipe(id, 'right')}
+              onSwipeLeft={(id) => handleSwipe(id, 'left')}
+            />
+          ) : (
+            <motion.div 
+              className="glass-card p-8 flex flex-col items-center shadow-card"
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, duration: 0.4 }}
+            >
+              <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-4">
+                <Search size={32} className="text-app-text" />
+              </div>
+              <h3 className="text-xl font-orbitron mb-2">No more streamers</h3>
+              <p className="text-app-text text-center max-w-xs mb-6">
+                You've seen all potential streaming partners for now. Check back later!
+              </p>
+              <Button 
+                onClick={fetchProfiles}
+                variant="outline" 
+                className="border-twitch/30 text-twitch hover:bg-twitch/10 button-hover flex items-center gap-2"
+              >
+                <Search size={16} />
+                <span>Refresh search</span>
+              </Button>
+            </motion.div>
+          )}
         </div>
       </div>
     </div>
