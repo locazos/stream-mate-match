@@ -1,12 +1,14 @@
 
 import React, { useState } from 'react';
 import MatchesList from '../components/Matches/MatchesList';
-import { useStreamers } from '../hooks/useStreamers';
+import { useMatches } from '../hooks/useMatches';
+import { useAuth } from '../hooks/useAuth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MessageSquare, UserCheck } from 'lucide-react';
+import { MessageSquare, UserCheck, Loader2 } from 'lucide-react';
 
 const Matches: React.FC = () => {
-  const { matches } = useStreamers();
+  const { session } = useAuth();
+  const { matches, isLoading } = useMatches(session?.user.id || '');
   const [activeTab, setActiveTab] = useState('matches');
   
   // In a real app, we would have actual messages
@@ -36,7 +38,14 @@ const Matches: React.FC = () => {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="matches" className="mt-0">
-            <MatchesList matches={matches} />
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center">
+                <Loader2 size={40} className="text-twitch mb-4 animate-spin" />
+                <h3 className="text-lg font-medium mb-2">Loading matches...</h3>
+              </div>
+            ) : (
+              <MatchesList matches={matches} />
+            )}
           </TabsContent>
           <TabsContent value="messages" className="mt-0">
             <div className="flex flex-col items-center justify-center py-10 text-center">
