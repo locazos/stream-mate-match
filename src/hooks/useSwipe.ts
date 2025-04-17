@@ -41,7 +41,8 @@ export const useSwipe = (currentUserId: string) => {
         .neq('id', currentUserId);
       
       if (swipedIds.length > 0) {
-        query = query.not('id', 'in', `(${swipedIds.join(',')})`);
+        // Using a different approach to filter out swiped profiles
+        query = query.not('id', 'in', swipedIds);
       }
 
       const { data: availableProfiles, error } = await query;
@@ -52,10 +53,18 @@ export const useSwipe = (currentUserId: string) => {
       }
       
       console.log('Available profiles fetched:', availableProfiles?.length);
-      setProfiles(availableProfiles || []);
+      
+      if (availableProfiles && availableProfiles.length > 0) {
+        setProfiles(availableProfiles);
+      } else {
+        console.log('No profiles available, adding test profiles');
+        addTestProfilesIfEmpty();
+      }
     } catch (error) {
       console.error('Error:', error);
       toast.error('Error loading profiles');
+      // If there was an error, add test profiles as fallback
+      addTestProfilesIfEmpty();
     } finally {
       setIsLoading(false);
     }
@@ -83,6 +92,7 @@ export const useSwipe = (currentUserId: string) => {
           .maybeSingle();
 
         if (matchData) {
+          console.log('Found a match!', matchData);
           // Create a match
           const { error: matchError } = await supabase
             .from('matches')
@@ -105,38 +115,44 @@ export const useSwipe = (currentUserId: string) => {
   };
 
   // Add some test profiles if none are available - for demo purposes only
-  const addTestProfilesIfEmpty = async () => {
-    if (profiles.length === 0 && !isLoading) {
-      console.log('No profiles available, adding test profiles');
-      
-      const testProfiles = [
-        {
-          username: 'StreamerPro',
-          avatar_url: 'https://randomuser.me/api/portraits/men/32.jpg',
-          description: 'Professional streamer looking for collaborations on FPS games.',
-          games: ['Valorant', 'Call of Duty', 'Apex Legends'],
-          language: 'English',
-          timezone: 'America/New_York',
-          availability: 'Weekday evenings'
-        },
-        {
-          username: 'GamerGirl',
-          avatar_url: 'https://randomuser.me/api/portraits/women/44.jpg',
-          description: 'RPG specialist streaming since 2020. Looking for co-op partners.',
-          games: ['Elden Ring', 'Diablo IV', 'Final Fantasy'],
-          language: 'English',
-          timezone: 'Europe/London',
-          availability: 'Weekends'
-        }
-      ];
-      
-      setProfiles(testProfiles as Profile[]);
-    }
+  const addTestProfilesIfEmpty = () => {
+    console.log('Adding test profiles as fallback');
+    
+    const testProfiles = [
+      {
+        id: 'test-1',
+        username: 'StreamerPro',
+        avatar_url: 'https://randomuser.me/api/portraits/men/32.jpg',
+        description: 'Professional streamer looking for collaborations on FPS games.',
+        games: ['Valorant', 'Call of Duty', 'Apex Legends'],
+        language: 'English',
+        timezone: 'America/New_York',
+        availability: 'Weekday evenings'
+      },
+      {
+        id: 'test-2',
+        username: 'GamerGirl',
+        avatar_url: 'https://randomuser.me/api/portraits/women/44.jpg',
+        description: 'RPG specialist streaming since 2020. Looking for co-op partners.',
+        games: ['Elden Ring', 'Diablo IV', 'Final Fantasy'],
+        language: 'English',
+        timezone: 'Europe/London',
+        availability: 'Weekends'
+      }
+    ];
+    
+    setProfiles(testProfiles as Profile[]);
   };
 
   useEffect(() => {
+    if (currentUserId) {
+      fetchProfiles();
+    }
+  }, [currentUserId]);
+
+  useEffect(() => {
+    // If we have no profiles after loading, add some test profiles
     if (profiles.length === 0 && !isLoading) {
-      // If we have no profiles after loading, add some test profiles
       addTestProfilesIfEmpty();
     }
   }, [profiles, isLoading]);

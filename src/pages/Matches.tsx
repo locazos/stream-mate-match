@@ -1,42 +1,68 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MatchesList from '../components/Matches/MatchesList';
 import { useMatches } from '../hooks/useMatches';
 import { useAuth } from '../hooks/useAuth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MessageSquare, UserCheck, Loader2 } from 'lucide-react';
+import { MessageSquare, UserCheck, Loader2, RefreshCcw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const Matches: React.FC = () => {
   const { session } = useAuth();
-  const { matches, isLoading } = useMatches(session?.user.id || '');
+  const { matches, isLoading, fetchMatches } = useMatches(session?.user?.id || '');
   const [activeTab, setActiveTab] = useState('matches');
   
   // In a real app, we would have actual messages
   // For now, we'll just show an empty state
   const mockMessages: any[] = [];
+  
+  // Debug logging for matches
+  useEffect(() => {
+    console.log('Matches data:', matches);
+  }, [matches]);
+  
+  // Manual refresh function
+  const handleRefresh = () => {
+    if (session?.user?.id) {
+      fetchMatches();
+    }
+  };
 
   return (
     <div className="pt-16 pb-20 px-4 min-h-screen">
       <div className="container max-w-md mx-auto">
         <Tabs defaultValue="matches" className="mt-4">
-          <TabsList className="grid grid-cols-2 mb-6">
-            <TabsTrigger 
-              value="matches" 
-              onClick={() => setActiveTab('matches')}
-              className="data-[state=active]:bg-twitch"
+          <div className="flex items-center justify-between mb-4">
+            <TabsList className="grid grid-cols-2">
+              <TabsTrigger 
+                value="matches" 
+                onClick={() => setActiveTab('matches')}
+                className="data-[state=active]:bg-twitch"
+              >
+                <UserCheck size={16} className="mr-2" />
+                Matches
+              </TabsTrigger>
+              <TabsTrigger 
+                value="messages" 
+                onClick={() => setActiveTab('messages')}
+                className="data-[state=active]:bg-twitch"
+              >
+                <MessageSquare size={16} className="mr-2" />
+                Messages
+              </TabsTrigger>
+            </TabsList>
+            
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={handleRefresh}
+              className="text-app-text"
+              disabled={isLoading}
             >
-              <UserCheck size={16} className="mr-2" />
-              Matches
-            </TabsTrigger>
-            <TabsTrigger 
-              value="messages" 
-              onClick={() => setActiveTab('messages')}
-              className="data-[state=active]:bg-twitch"
-            >
-              <MessageSquare size={16} className="mr-2" />
-              Messages
-            </TabsTrigger>
-          </TabsList>
+              <RefreshCcw size={18} className={isLoading ? "animate-spin" : ""} />
+            </Button>
+          </div>
+          
           <TabsContent value="matches" className="mt-0">
             {isLoading ? (
               <div className="flex flex-col items-center justify-center py-10 text-center">

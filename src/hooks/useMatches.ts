@@ -18,7 +18,13 @@ export const useMatches = (currentUserId: string) => {
 
   const fetchMatches = async () => {
     try {
+      if (!currentUserId) {
+        console.log('No current user ID provided for matches');
+        return;
+      }
+      
       setIsLoading(true);
+      console.log('Fetching matches for user ID:', currentUserId);
       
       // Get all matches where the current user is either user_a or user_b
       const { data: matchesData, error: matchesError } = await supabase
@@ -26,7 +32,12 @@ export const useMatches = (currentUserId: string) => {
         .select('*')
         .or(`user_a.eq.${currentUserId},user_b.eq.${currentUserId}`);
 
-      if (matchesError) throw matchesError;
+      if (matchesError) {
+        console.error('Error fetching matches:', matchesError);
+        throw matchesError;
+      }
+      
+      console.log('Raw matches data:', matchesData);
       
       // For each match, fetch the profile of the other user
       if (matchesData && matchesData.length > 0) {
@@ -34,13 +45,20 @@ export const useMatches = (currentUserId: string) => {
           matchesData.map(async (match) => {
             // Determine which user is the match (not the current user)
             const matchedUserId = match.user_a === currentUserId ? match.user_b : match.user_a;
+            console.log(`Processing match ${match.id}: matched user ID is ${matchedUserId}`);
             
             // Fetch the profile of the matched user
-            const { data: profileData } = await supabase
+            const { data: profileData, error: profileError } = await supabase
               .from('profiles')
               .select('*')
               .eq('id', matchedUserId)
-              .single();
+              .maybeSingle();
+              
+            if (profileError) {
+              console.error(`Error fetching profile for user ${matchedUserId}:`, profileError);
+            }
+            
+            console.log(`Profile data for user ${matchedUserId}:`, profileData);
               
             return {
               ...match,
@@ -49,12 +67,14 @@ export const useMatches = (currentUserId: string) => {
           })
         );
         
+        console.log('Processed matches with profiles:', matchesWithProfiles);
         setMatches(matchesWithProfiles);
       } else {
+        console.log('No matches found for user', currentUserId);
         setMatches([]);
       }
     } catch (error) {
-      console.error('Error fetching matches:', error);
+      console.error('Error in fetchMatches:', error);
       toast.error('Error loading matches');
     } finally {
       setIsLoading(false);
