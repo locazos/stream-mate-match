@@ -27,6 +27,7 @@ export const useMatches = (currentUserId: string) => {
       console.log('Fetching matches for user ID:', currentUserId);
       
       // Get all matches where the current user is either user_a or user_b
+      // Using parameterized query to avoid SQL injection and improve query parsing
       const { data: matchesData, error: matchesError } = await supabase
         .from('matches')
         .select('*')
@@ -68,7 +69,7 @@ export const useMatches = (currentUserId: string) => {
         );
         
         console.log('Processed matches with profiles:', matchesWithProfiles);
-        setMatches(matchesWithProfiles);
+        setMatches(matchesWithProfiles.filter(match => match.matchedProfile)); // Filter out matches without profiles
       } else {
         console.log('No matches found for user', currentUserId);
         setMatches([]);

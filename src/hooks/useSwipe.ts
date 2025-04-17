@@ -35,27 +35,28 @@ export const useSwipe = (currentUserId: string) => {
       const swipedIds = swipedProfiles?.map(s => s.target_id) || [];
       console.log('Already swiped profile IDs:', swipedIds);
       
-      let query = supabase
+      // First, let's get all profiles except the current user
+      const { data: availableProfiles, error } = await supabase
         .from('profiles')
         .select('*')
         .neq('id', currentUserId);
-      
-      if (swipedIds.length > 0) {
-        // Using a different approach to filter out swiped profiles
-        query = query.not('id', 'in', swipedIds);
-      }
-
-      const { data: availableProfiles, error } = await query;
 
       if (error) {
         console.error('Error fetching available profiles:', error);
         throw error;
       }
       
-      console.log('Available profiles fetched:', availableProfiles?.length);
+      // Then filter out the swiped profiles manually in JavaScript
+      // This avoids the SQL parsing error we were getting before
+      let filteredProfiles = availableProfiles || [];
+      if (swipedIds.length > 0) {
+        filteredProfiles = filteredProfiles.filter(profile => !swipedIds.includes(profile.id));
+      }
       
-      if (availableProfiles && availableProfiles.length > 0) {
-        setProfiles(availableProfiles);
+      console.log('Available profiles fetched:', filteredProfiles.length);
+      
+      if (filteredProfiles && filteredProfiles.length > 0) {
+        setProfiles(filteredProfiles);
       } else {
         console.log('No profiles available, adding test profiles');
         addTestProfilesIfEmpty();

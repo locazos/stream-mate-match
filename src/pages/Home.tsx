@@ -3,7 +3,7 @@ import React from 'react';
 import StreamerCard from '../components/Profile/StreamerCard';
 import { useSwipe } from '../hooks/useSwipe';
 import { useAuth } from '../hooks/useAuth';
-import { Loader2, Search } from 'lucide-react';
+import { Loader2, Search, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { toast } from '@/components/ui/sonner';
@@ -12,6 +12,7 @@ const Home: React.FC = () => {
   const { session } = useAuth();
   const { profiles, currentProfile, isLoading, fetchProfiles, handleSwipe } = 
     useSwipe(session?.user?.id || '');
+  const [refreshing, setRefreshing] = React.useState(false);
 
   React.useEffect(() => {
     if (session?.user?.id) {
@@ -21,8 +22,24 @@ const Home: React.FC = () => {
   
   // Debug logging to see what's happening with profiles
   React.useEffect(() => {
-    console.log('Current profile state:', { currentProfile, profilesCount: profiles.length });
-  }, [currentProfile, profiles]);
+    console.log('Current profile state:', { 
+      currentProfile, 
+      profilesCount: profiles.length,
+      isLoading
+    });
+  }, [currentProfile, profiles, isLoading]);
+  
+  const handleRefresh = async () => {
+    try {
+      setRefreshing(true);
+      await fetchProfiles();
+      toast.success('Profiles refreshed');
+    } catch (error) {
+      console.error('Error refreshing profiles:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -60,11 +77,16 @@ const Home: React.FC = () => {
             You've seen all potential streaming partners for now. Check back later!
           </p>
           <Button 
-            onClick={fetchProfiles}
+            onClick={handleRefresh}
             variant="outline" 
             className="border-twitch/30 text-twitch hover:bg-twitch/10 button-hover flex items-center gap-2"
+            disabled={refreshing}
           >
-            <Search size={16} />
+            {refreshing ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <RefreshCw size={16} />
+            )}
             <span>Refresh search</span>
           </Button>
         </motion.div>
@@ -94,6 +116,20 @@ const Home: React.FC = () => {
             <span className="sm:hidden">Swipe cards </span>
             to interact
           </p>
+          <Button
+            onClick={handleRefresh}
+            variant="outline"
+            size="sm"
+            className="mt-2 border-twitch/30 text-twitch hover:bg-twitch/10 button-hover"
+            disabled={refreshing}
+          >
+            {refreshing ? (
+              <Loader2 size={14} className="mr-2 animate-spin" />
+            ) : (
+              <RefreshCw size={14} className="mr-2" />
+            )}
+            <span>Refresh profiles</span>
+          </Button>
         </motion.div>
         
         <div className="flex-1 flex items-center justify-center min-h-0">
