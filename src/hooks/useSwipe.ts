@@ -21,37 +21,7 @@ export const useSwipe = (currentUserId: string) => {
       
       console.log('Fetching profiles for user ID:', currentUserId);
       
-      // Get all profiles except current user and already swiped ones
-      const { data: swipedProfiles, error: swipeError } = await supabase
-        .from('swipes')
-        .select('target_id')
-        .eq('swiper_id', currentUserId);
-
-      if (swipeError) {
-        console.error('Error fetching swiped profiles:', swipeError);
-        throw swipeError;
-      }
-      
-      const swipedIds = swipedProfiles?.map(s => s.target_id) || [];
-      console.log('Already swiped profile IDs:', swipedIds);
-      
-      // First, let's log all available profiles to diagnose issues
-      const { data: allProfiles, error: allProfilesError } = await supabase
-        .from('profiles')
-        .select('*');
-      
-      if (allProfilesError) {
-        console.error('Error fetching all profiles:', allProfilesError);
-      } else {
-        console.log('All profiles in database:', allProfiles.length);
-        
-        // Check if we have the specific profile ID we're looking for
-        const specificId = '7238973d-a6e5-462d-91d0-66a2104374a7';
-        console.log('Including the specific user ID we\'re looking for?', 
-          allProfiles.some(p => p.id === specificId));
-      }
-      
-      // Fetch profiles excluding the current user
+      // Fetch all profiles except current user
       const { data: availableProfiles, error } = await supabase
         .from('profiles')
         .select('*')
@@ -62,19 +32,10 @@ export const useSwipe = (currentUserId: string) => {
         throw error;
       }
       
-      // Filter out the swiped profiles manually in JavaScript
-      let filteredProfiles = availableProfiles || [];
-      if (swipedIds.length > 0) {
-        filteredProfiles = filteredProfiles.filter(profile => !swipedIds.includes(profile.id));
-      }
+      console.log('Available profiles to swipe on:', availableProfiles?.length || 0);
       
-      console.log('Available profiles to swipe on:', filteredProfiles.length);
-      if (filteredProfiles.length > 0) {
-        console.log('Profile IDs available:', filteredProfiles.map(p => p.id));
-      }
-      
-      if (filteredProfiles && filteredProfiles.length > 0) {
-        setProfiles(filteredProfiles);
+      if (availableProfiles && availableProfiles.length > 0) {
+        setProfiles(availableProfiles);
       } else {
         console.log('No profiles available, adding test profiles');
         addTestProfilesIfEmpty();
@@ -93,63 +54,34 @@ export const useSwipe = (currentUserId: string) => {
     try {
       console.log(`Handling ${direction} swipe for profile ID: ${targetId}`);
       
-      // Record the swipe
-      const { error: swipeError } = await supabase
-        .from('swipes')
-        .insert({ swiper_id: currentUserId, target_id: targetId, direction });
-
-      if (swipeError) {
-        console.error('Error recording swipe:', swipeError);
-        throw swipeError;
-      }
-      
-      console.log(`Swipe recorded: ${currentUserId} -> ${targetId} (${direction})`);
-
       if (direction === 'right') {
-        // Check if there's a mutual match
-        const { data: matchData, error: matchCheckError } = await supabase
-          .from('swipes')
-          .select('*')
-          .eq('swiper_id', targetId)
-          .eq('target_id', currentUserId)
-          .eq('direction', 'right')
-          .maybeSingle();
+        console.log('Creating a match with:', targetId);
+        
+        // Create a match in the matches table directly
+        const { data: newMatch, error: matchError } = await supabase
+          .from('matches')
+          .insert({ 
+            user_a: currentUserId, 
+            user_b: targetId 
+          })
+          .select();
 
-        if (matchCheckError) {
-          console.error('Error checking for match:', matchCheckError);
+        if (matchError) {
+          console.error('Error creating match:', matchError);
+          throw matchError;
         }
-
-        // For Connect button, we'll always display a success message
-        if (direction === 'right') {
-          if (matchData) {
-            console.log('Found a match!', matchData);
-            // Create a match
-            const { data: newMatch, error: matchError } = await supabase
-              .from('matches')
-              .insert({ 
-                user_a: currentUserId, 
-                user_b: targetId 
-              })
-              .select();
-
-            if (matchError) {
-              console.error('Error creating match:', matchError);
-              throw matchError;
-            }
-            
-            console.log('Match created successfully:', newMatch);
-            toast.success("¡Es un match! 🎮");
-          } else {
-            console.log('No mutual match found with this profile');
-            toast.success("Connection request sent!");
-          }
-        }
+        
+        console.log('Match created successfully:', newMatch);
+        toast.success("¡Es un match! 🎮");
+      } else {
+        console.log('User passed on profile:', targetId);
+        toast.success("Skipped this profile");
       }
 
       setCurrentIndex(prev => prev + 1);
     } catch (error) {
       console.error('Error in handleSwipe:', error);
-      toast.error('Error processing swipe');
+      toast.error('Error processing action');
     }
   };
 
@@ -188,13 +120,6 @@ export const useSwipe = (currentUserId: string) => {
       fetchProfiles();
     }
   }, [currentUserId]);
-
-  useEffect(() => {
-    // If we have no profiles after loading, add some test profiles
-    if (profiles.length === 0 && !isLoading) {
-      addTestProfilesIfEmpty();
-    }
-  }, [profiles, isLoading]);
 
   return {
     profiles,

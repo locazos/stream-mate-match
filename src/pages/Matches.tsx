@@ -4,12 +4,13 @@ import MatchesList from '../components/Matches/MatchesList';
 import { useMatches } from '../hooks/useMatches';
 import { useAuth } from '../hooks/useAuth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MessageSquare, UserCheck, Loader2, RefreshCcw } from 'lucide-react';
+import { MessageSquare, UserCheck, Loader2, RefreshCcw, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
 
 const Matches: React.FC = () => {
   const { session } = useAuth();
-  const { matches, isLoading, fetchMatches } = useMatches(session?.user?.id || '');
+  const { matches, isLoading, error, fetchMatches } = useMatches(session?.user?.id || '');
   const [activeTab, setActiveTab] = useState('matches');
   
   // In a real app, we would have actual messages
@@ -18,12 +19,22 @@ const Matches: React.FC = () => {
   
   // Debug logging for matches
   useEffect(() => {
-    console.log('Matches data:', matches);
-  }, [matches]);
+    console.log('Matches component loaded with data:', {
+      matches: matches.length,
+      matchDetails: matches,
+      userId: session?.user?.id
+    });
+  }, [matches, session?.user?.id]);
+  
+  // Initial load logging
+  useEffect(() => {
+    console.log('Matches component mounted, user ID:', session?.user?.id);
+  }, []);
   
   // Manual refresh function
   const handleRefresh = () => {
     if (session?.user?.id) {
+      console.log('Manual refresh triggered for matches');
       fetchMatches();
     }
   };
@@ -69,6 +80,23 @@ const Matches: React.FC = () => {
                 <Loader2 size={40} className="text-twitch mb-4 animate-spin" />
                 <h3 className="text-lg font-medium mb-2">Loading matches...</h3>
               </div>
+            ) : error ? (
+              <motion.div 
+                className="flex flex-col items-center justify-center py-10 text-center glass-card p-8"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center mb-4">
+                  <AlertCircle size={24} className="text-red-400" />
+                </div>
+                <h3 className="text-xl font-medium mb-2">Error Loading Matches</h3>
+                <p className="text-app-text text-sm max-w-xs mb-6">
+                  {error}
+                </p>
+                <Button onClick={handleRefresh} variant="default" className="gradient-purple">
+                  Try Again
+                </Button>
+              </motion.div>
             ) : (
               <MatchesList matches={matches} />
             )}

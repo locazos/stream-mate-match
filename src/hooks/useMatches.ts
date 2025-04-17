@@ -15,6 +15,7 @@ export interface Match {
 export const useMatches = (currentUserId: string) => {
   const [matches, setMatches] = useState<Match[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchMatches = async () => {
     try {
@@ -24,18 +25,8 @@ export const useMatches = (currentUserId: string) => {
       }
       
       setIsLoading(true);
+      setError(null);
       console.log('Fetching matches for user ID:', currentUserId);
-      
-      // Log all matches in the database for debugging
-      const { data: allMatchesData, error: allMatchesError } = await supabase
-        .from('matches')
-        .select('*');
-        
-      if (allMatchesError) {
-        console.error('Error fetching all matches:', allMatchesError);
-      } else {
-        console.log('All matches in database:', allMatchesData);
-      }
       
       // Get all matches where the current user is either user_a or user_b
       const { data: matchesData, error: matchesError } = await supabase
@@ -45,10 +36,11 @@ export const useMatches = (currentUserId: string) => {
 
       if (matchesError) {
         console.error('Error fetching user matches:', matchesError);
+        setError('Error loading matches from database');
         throw matchesError;
       }
       
-      console.log('Matches data:', matchesData);
+      console.log('Matches data retrieved:', matchesData?.length || 0, 'matches found');
       
       // For each match, fetch the profile of the other user
       if (matchesData && matchesData.length > 0) {
@@ -67,6 +59,7 @@ export const useMatches = (currentUserId: string) => {
               
             if (profileError) {
               console.error(`Error fetching profile for user ${matchedUserId}:`, profileError);
+              return null; // Return null for failed lookups
             }
             
             console.log(`Profile data for user ${matchedUserId}:`, profileData);
@@ -78,14 +71,17 @@ export const useMatches = (currentUserId: string) => {
           })
         );
         
-        console.log('Processed matches with profiles:', matchesWithProfiles);
-        setMatches(matchesWithProfiles.filter(match => match.matchedProfile)); // Filter out matches without profiles
+        // Filter out any null entries (failed lookups)
+        const validMatches = matchesWithProfiles.filter(match => match !== null) as Match[];
+        console.log('Final processed matches:', validMatches.length);
+        setMatches(validMatches);
       } else {
         console.log('No matches found for user', currentUserId);
         setMatches([]);
       }
     } catch (error) {
       console.error('Error in fetchMatches:', error);
+      setError('Error loading matches');
       toast.error('Error loading matches');
     } finally {
       setIsLoading(false);
@@ -135,6 +131,7 @@ export const useMatches = (currentUserId: string) => {
   return {
     matches,
     isLoading,
+    error,
     fetchMatches,
     checkSpecificMatch
   };
