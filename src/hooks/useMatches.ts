@@ -26,19 +26,29 @@ export const useMatches = (currentUserId: string) => {
       setIsLoading(true);
       console.log('Fetching matches for user ID:', currentUserId);
       
+      // Log all matches in the database for debugging
+      const { data: allMatchesData, error: allMatchesError } = await supabase
+        .from('matches')
+        .select('*');
+        
+      if (allMatchesError) {
+        console.error('Error fetching all matches:', allMatchesError);
+      } else {
+        console.log('All matches in database:', allMatchesData);
+      }
+      
       // Get all matches where the current user is either user_a or user_b
-      // Using parameterized query to avoid SQL injection and improve query parsing
       const { data: matchesData, error: matchesError } = await supabase
         .from('matches')
         .select('*')
         .or(`user_a.eq.${currentUserId},user_b.eq.${currentUserId}`);
 
       if (matchesError) {
-        console.error('Error fetching matches:', matchesError);
+        console.error('Error fetching user matches:', matchesError);
         throw matchesError;
       }
       
-      console.log('Raw matches data:', matchesData);
+      console.log('Matches data:', matchesData);
       
       // For each match, fetch the profile of the other user
       if (matchesData && matchesData.length > 0) {
@@ -82,6 +92,40 @@ export const useMatches = (currentUserId: string) => {
     }
   };
 
+  // Check if a specific match exists
+  const checkSpecificMatch = async (specificUserId: string) => {
+    try {
+      console.log(`Checking for specific match between ${currentUserId} and ${specificUserId}`);
+      
+      // Check for match where current user is user_a and specific user is user_b
+      const { data: matchA, error: errorA } = await supabase
+        .from('matches')
+        .select('*')
+        .eq('user_a', currentUserId)
+        .eq('user_b', specificUserId)
+        .maybeSingle();
+        
+      if (errorA) console.error('Error checking match A:', errorA);
+      
+      // Check for match where current user is user_b and specific user is user_a
+      const { data: matchB, error: errorB } = await supabase
+        .from('matches')
+        .select('*')
+        .eq('user_a', specificUserId)
+        .eq('user_b', currentUserId)
+        .maybeSingle();
+        
+      if (errorB) console.error('Error checking match B:', errorB);
+      
+      const matchExists = !!matchA || !!matchB;
+      console.log(`Match between these users exists: ${matchExists}`);
+      return matchExists;
+    } catch (error) {
+      console.error('Error checking specific match:', error);
+      return false;
+    }
+  };
+
   useEffect(() => {
     if (currentUserId) {
       fetchMatches();
@@ -91,6 +135,7 @@ export const useMatches = (currentUserId: string) => {
   return {
     matches,
     isLoading,
-    fetchMatches
+    fetchMatches,
+    checkSpecificMatch
   };
 };

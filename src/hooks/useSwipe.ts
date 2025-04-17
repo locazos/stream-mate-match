@@ -35,7 +35,20 @@ export const useSwipe = (currentUserId: string) => {
       const swipedIds = swipedProfiles?.map(s => s.target_id) || [];
       console.log('Already swiped profile IDs:', swipedIds);
       
-      // First, let's get all profiles except the current user
+      // First, let's log all available profiles to diagnose issues
+      const { data: allProfiles, error: allProfilesError } = await supabase
+        .from('profiles')
+        .select('*');
+      
+      if (allProfilesError) {
+        console.error('Error fetching all profiles:', allProfilesError);
+      } else {
+        console.log('All profiles in database:', allProfiles.length);
+        console.log('Including the specific user ID we\'re looking for?', 
+          allProfiles.some(p => p.id === '7238973d-a6e5-462d-91d0-66a2104374a7'));
+      }
+      
+      // Then fetch profiles excluding the current user
       const { data: availableProfiles, error } = await supabase
         .from('profiles')
         .select('*')
@@ -47,13 +60,15 @@ export const useSwipe = (currentUserId: string) => {
       }
       
       // Then filter out the swiped profiles manually in JavaScript
-      // This avoids the SQL parsing error we were getting before
       let filteredProfiles = availableProfiles || [];
       if (swipedIds.length > 0) {
         filteredProfiles = filteredProfiles.filter(profile => !swipedIds.includes(profile.id));
       }
       
-      console.log('Available profiles fetched:', filteredProfiles.length);
+      console.log('Available profiles to swipe on:', filteredProfiles.length);
+      if (filteredProfiles.length > 0) {
+        console.log('Profile IDs available:', filteredProfiles.map(p => p.id));
+      }
       
       if (filteredProfiles && filteredProfiles.length > 0) {
         setProfiles(filteredProfiles);
@@ -62,7 +77,7 @@ export const useSwipe = (currentUserId: string) => {
         addTestProfilesIfEmpty();
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error in fetchProfiles:', error);
       toast.error('Error loading profiles');
       // If there was an error, add test profiles as fallback
       addTestProfilesIfEmpty();
@@ -80,11 +95,16 @@ export const useSwipe = (currentUserId: string) => {
         .from('swipes')
         .insert({ swiper_id: currentUserId, target_id: targetId, direction });
 
-      if (swipeError) throw swipeError;
+      if (swipeError) {
+        console.error('Error recording swipe:', swipeError);
+        throw swipeError;
+      }
+      
+      console.log(`Swipe recorded: ${currentUserId} -> ${targetId} (${direction})`);
 
       if (direction === 'right') {
         // Check if there's a mutual match
-        const { data: matchData } = await supabase
+        const { data: matchData, error: matchCheckError } = await supabase
           .from('swipes')
           .select('*')
           .eq('swiper_id', targetId)
@@ -92,25 +112,36 @@ export const useSwipe = (currentUserId: string) => {
           .eq('direction', 'right')
           .maybeSingle();
 
+        if (matchCheckError) {
+          console.error('Error checking for match:', matchCheckError);
+        }
+
         if (matchData) {
           console.log('Found a match!', matchData);
           // Create a match
-          const { error: matchError } = await supabase
+          const { data: newMatch, error: matchError } = await supabase
             .from('matches')
             .insert({ 
               user_a: currentUserId, 
               user_b: targetId 
-            });
+            })
+            .select();
 
-          if (matchError) throw matchError;
+          if (matchError) {
+            console.error('Error creating match:', matchError);
+            throw matchError;
+          }
           
+          console.log('Match created successfully:', newMatch);
           toast.success("¡Es un match! 🎮");
+        } else {
+          console.log('No mutual match found with this profile');
         }
       }
 
       setCurrentIndex(prev => prev + 1);
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error in handleSwipe:', error);
       toast.error('Error processing swipe');
     }
   };
