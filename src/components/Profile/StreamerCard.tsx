@@ -1,9 +1,8 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Heart, X, Gamepad2, Users, Calendar } from 'lucide-react';
-import { motion, PanInfo, useAnimation } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Profile } from '@/hooks/useProfile';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface StreamerCardProps {
   profile: Profile;
@@ -12,80 +11,13 @@ interface StreamerCardProps {
 }
 
 const StreamerCard: React.FC<StreamerCardProps> = ({ profile, onSwipeRight, onSwipeLeft }) => {
-  const controls = useAnimation();
-  const isMobile = useIsMobile();
-  const [rotation, setRotation] = useState(0);
-  const [exitX, setExitX] = useState(0);
-
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const threshold = 100;
-    const velocity = Math.abs(info.velocity.x);
-    const direction = info.velocity.x > 0 ? 1 : -1;
-    
-    if (Math.abs(info.offset.x) > threshold || velocity > 800) {
-      const exitX = direction * window.innerWidth * 1.5;
-      setExitX(exitX);
-      
-      if (direction > 0) {
-        controls.start({ 
-          x: exitX,
-          y: 50,
-          rotate: 30,
-          opacity: 0,
-          transition: { duration: 0.2 }
-        });
-        onSwipeRight(profile.id);
-      } else {
-        controls.start({ 
-          x: exitX,
-          y: 50,
-          rotate: -30,
-          opacity: 0,
-          transition: { duration: 0.2 }
-        });
-        onSwipeLeft(profile.id);
-      }
-    } else {
-      // Return to center
-      controls.start({ 
-        x: 0,
-        y: 0,
-        rotate: 0,
-        opacity: 1,
-        transition: { type: "spring", stiffness: 300, damping: 20 }
-      });
-    }
-  };
-
-  const handleDrag = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    // Calculate rotation based on drag distance
-    const rotate = (info.offset.x * 0.1);
-    setRotation(rotate);
-    
-    // Calculate opacity for the action buttons
-    const swipeProgress = Math.min(Math.abs(info.offset.x) / 100, 1);
-    const opacity = swipeProgress;
-    
-    controls.start({
-      x: info.point.x,
-      rotate,
-      opacity: 1 - Math.abs(info.offset.x) / 1000,
-      transition: { duration: 0 }
-    });
-  };
-
   return (
     <motion.div 
       className="relative w-full max-w-sm mx-auto rounded-3xl overflow-hidden backdrop-blur-xl bg-black/20"
       style={{ height: "600px" }}
       initial={{ scale: 0.95, opacity: 0 }}
-      animate={controls}
-      drag={isMobile ? "x" : false}
-      dragConstraints={{ left: 0, right: 0 }}
-      dragElastic={0.9}
-      onDragEnd={handleDragEnd}
-      onDrag={handleDrag}
-      whileTap={{ cursor: "grabbing" }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.3 }}
     >
       <div className="absolute inset-0">
         <img 

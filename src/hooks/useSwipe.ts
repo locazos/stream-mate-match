@@ -44,11 +44,14 @@ export const useSwipe = (currentUserId: string) => {
         console.error('Error fetching all profiles:', allProfilesError);
       } else {
         console.log('All profiles in database:', allProfiles.length);
+        
+        // Check if we have the specific profile ID we're looking for
+        const specificId = '7238973d-a6e5-462d-91d0-66a2104374a7';
         console.log('Including the specific user ID we\'re looking for?', 
-          allProfiles.some(p => p.id === '7238973d-a6e5-462d-91d0-66a2104374a7'));
+          allProfiles.some(p => p.id === specificId));
       }
       
-      // Then fetch profiles excluding the current user
+      // Fetch profiles excluding the current user
       const { data: availableProfiles, error } = await supabase
         .from('profiles')
         .select('*')
@@ -59,7 +62,7 @@ export const useSwipe = (currentUserId: string) => {
         throw error;
       }
       
-      // Then filter out the swiped profiles manually in JavaScript
+      // Filter out the swiped profiles manually in JavaScript
       let filteredProfiles = availableProfiles || [];
       if (swipedIds.length > 0) {
         filteredProfiles = filteredProfiles.filter(profile => !swipedIds.includes(profile.id));
@@ -116,26 +119,30 @@ export const useSwipe = (currentUserId: string) => {
           console.error('Error checking for match:', matchCheckError);
         }
 
-        if (matchData) {
-          console.log('Found a match!', matchData);
-          // Create a match
-          const { data: newMatch, error: matchError } = await supabase
-            .from('matches')
-            .insert({ 
-              user_a: currentUserId, 
-              user_b: targetId 
-            })
-            .select();
+        // For Connect button, we'll always display a success message
+        if (direction === 'right') {
+          if (matchData) {
+            console.log('Found a match!', matchData);
+            // Create a match
+            const { data: newMatch, error: matchError } = await supabase
+              .from('matches')
+              .insert({ 
+                user_a: currentUserId, 
+                user_b: targetId 
+              })
+              .select();
 
-          if (matchError) {
-            console.error('Error creating match:', matchError);
-            throw matchError;
+            if (matchError) {
+              console.error('Error creating match:', matchError);
+              throw matchError;
+            }
+            
+            console.log('Match created successfully:', newMatch);
+            toast.success("¡Es un match! 🎮");
+          } else {
+            console.log('No mutual match found with this profile');
+            toast.success("Connection request sent!");
           }
-          
-          console.log('Match created successfully:', newMatch);
-          toast.success("¡Es un match! 🎮");
-        } else {
-          console.log('No mutual match found with this profile');
         }
       }
 
