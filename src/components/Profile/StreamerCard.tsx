@@ -14,7 +14,7 @@ const StreamerCard: React.FC<StreamerCardProps> = ({ profile, onSwipeRight, onSw
   return (
     <motion.div 
       className="relative w-full max-w-sm mx-auto rounded-3xl overflow-hidden backdrop-blur-xl bg-black/20"
-      style={{ height: "600px", maxHeight: "80vh" }}
+      style={{ height: "600px" }}
       initial={{ scale: 0.95, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.3 }}

@@ -17,7 +17,6 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     if (session?.user?.id) {
-      console.log('Home component mounted, fetching profiles for user:', session?.user?.id);
       fetchProfiles().catch((err) => {
         console.error('Error in initial profile fetch:', err);
         setError('Failed to load profiles. Please try refreshing.');
@@ -27,7 +26,7 @@ const Home: React.FC = () => {
   
   // Debug logging to see what's happening with profiles
   useEffect(() => {
-    console.log('Profile state updated:', { 
+    console.log('Current profile state:', { 
       currentProfile, 
       profilesCount: profiles.length,
       isLoading,
@@ -148,7 +147,7 @@ const Home: React.FC = () => {
       <div className="absolute inset-0 bg-gradient-to-b from-app-dark via-app-gray to-app-dark z-0" />
       <div className="absolute inset-0 bg-[linear-gradient(rgba(145,70,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(145,70,255,0.03)_1px,transparent_1px)] bg-[size:30px_30px] z-0" />
       
-      <div className="w-full max-w-lg mx-auto relative z-10 flex flex-col h-full px-4">
+      <div className="w-full max-w-lg mx-auto relative z-10 flex flex-col flex-1 px-4">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -175,7 +174,7 @@ const Home: React.FC = () => {
           </Button>
         </motion.div>
         
-        <div className="flex-1 flex items-center justify-center overflow-visible py-4">
+        <div className="flex-1 flex items-center justify-center">
           {currentProfile && (
             <StreamerCard 
               profile={currentProfile}
