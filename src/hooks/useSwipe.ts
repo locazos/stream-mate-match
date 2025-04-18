@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Profile } from './useProfile';
@@ -77,6 +78,7 @@ export const useSwipe = (currentUserId: string) => {
       
       console.log(`Swipe recorded: ${currentUserId} -> ${targetId} (${direction})`);
 
+      // Only check for matches on right swipes
       if (direction === 'right') {
         // Check if there's a mutual match
         const { data: matchData, error: matchCheckError } = await supabase
@@ -92,7 +94,6 @@ export const useSwipe = (currentUserId: string) => {
           throw matchCheckError;
         }
 
-        // For Connect button, we'll always display a success message
         if (matchData) {
           console.log('Found a mutual match! Creating match record...');
           
