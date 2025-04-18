@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Profile } from './useProfile';
@@ -64,24 +63,28 @@ export const useSwipe = (currentUserId: string) => {
 
   const handleSwipe = async (targetId: string, direction: 'left' | 'right') => {
     try {
-      console.log(`Handling ${direction} swipe for profile ID: ${targetId}`);
+      console.log(`[Swipe] Processing ${direction} swipe from ${currentUserId} to ${targetId}`);
       
       // Record the swipe
       const { error: swipeError } = await supabase
         .from('swipes')
-        .insert({ swiper_id: currentUserId, target_id: targetId, direction });
+        .insert({ 
+          swiper_id: currentUserId, 
+          target_id: targetId, 
+          direction 
+        });
 
       if (swipeError) {
-        console.error('Error recording swipe:', swipeError);
+        console.error('[Swipe] Error recording swipe:', swipeError);
         throw swipeError;
       }
       
-      console.log(`Swipe recorded: ${currentUserId} -> ${targetId} (${direction})`);
+      console.log('[Swipe] Successfully recorded swipe');
 
       // Only check for matches on right swipes
       if (direction === 'right') {
-        // Check if there's a mutual match
-        const { data: matchData, error: matchCheckError } = await supabase
+        // Check if target user already swiped right on current user
+        const { data: reciprocalSwipe, error: checkError } = await supabase
           .from('swipes')
           .select('*')
           .eq('swiper_id', targetId)
@@ -89,38 +92,38 @@ export const useSwipe = (currentUserId: string) => {
           .eq('direction', 'right')
           .maybeSingle();
 
-        if (matchCheckError) {
-          console.error('Error checking for match:', matchCheckError);
-          throw matchCheckError;
+        if (checkError) {
+          console.error('[Match] Error checking for reciprocal swipe:', checkError);
+          throw checkError;
         }
 
-        if (matchData) {
-          console.log('Found a mutual match! Creating match record...');
+        if (reciprocalSwipe) {
+          console.log('[Match] Found reciprocal swipe, creating match...');
           
           // Call the create_match RPC function
-          const { data: newMatch, error: matchError } = await supabase
+          const { data: match, error: matchError } = await supabase
             .rpc('create_match', { 
               user_1: currentUserId, 
               user_2: targetId 
             });
 
           if (matchError) {
-            console.error('Error creating match:', matchError);
+            console.error('[Match] Error creating match:', matchError);
             throw matchError;
           }
           
-          console.log('Match created successfully:', newMatch);
+          console.log('[Match] Successfully created match:', match);
           toast.success("¡Es un match! 🎮");
         } else {
-          console.log('No mutual match found with this profile');
-          toast.success("Connection request sent!");
+          console.log('[Match] No reciprocal swipe found yet');
+          toast.success("Solicitud enviada");
         }
       }
 
       setCurrentIndex(prev => prev + 1);
     } catch (error) {
-      console.error('Error in handleSwipe:', error);
-      toast.error('Error processing swipe');
+      console.error('[Error] Error in handleSwipe:', error);
+      toast.error('Error procesando la acción');
     }
   };
 
