@@ -35,22 +35,6 @@ export const useSwipe = (currentUserId: string) => {
       const swipedIds = swipedProfiles?.map(s => s.target_id) || [];
       console.log('Already swiped profile IDs:', swipedIds);
       
-      // First, let's log all available profiles to diagnose issues
-      const { data: allProfiles, error: allProfilesError } = await supabase
-        .from('profiles')
-        .select('*');
-      
-      if (allProfilesError) {
-        console.error('Error fetching all profiles:', allProfilesError);
-      } else {
-        console.log('All profiles in database:', allProfiles.length);
-        
-        // Check if we have the specific profile ID we're looking for
-        const specificId = '7238973d-a6e5-462d-91d0-66a2104374a7';
-        console.log('Including the specific user ID we\'re looking for?', 
-          allProfiles.some(p => p.id === specificId));
-      }
-      
       // Fetch profiles excluding the current user
       const { data: availableProfiles, error } = await supabase
         .from('profiles')
@@ -69,21 +53,10 @@ export const useSwipe = (currentUserId: string) => {
       }
       
       console.log('Available profiles to swipe on:', filteredProfiles.length);
-      if (filteredProfiles.length > 0) {
-        console.log('Profile IDs available:', filteredProfiles.map(p => p.id));
-      }
-      
-      if (filteredProfiles && filteredProfiles.length > 0) {
-        setProfiles(filteredProfiles);
-      } else {
-        console.log('No profiles available, adding test profiles');
-        addTestProfilesIfEmpty();
-      }
+      setProfiles(filteredProfiles);
     } catch (error) {
       console.error('Error in fetchProfiles:', error);
       toast.error('Error loading profiles');
-      // If there was an error, add test profiles as fallback
-      addTestProfilesIfEmpty();
     } finally {
       setIsLoading(false);
     }
@@ -153,48 +126,11 @@ export const useSwipe = (currentUserId: string) => {
     }
   };
 
-  // Add some test profiles if none are available - for demo purposes only
-  const addTestProfilesIfEmpty = () => {
-    console.log('Adding test profiles as fallback');
-    
-    const testProfiles = [
-      {
-        id: 'test-1',
-        username: 'StreamerPro',
-        avatar_url: 'https://randomuser.me/api/portraits/men/32.jpg',
-        description: 'Professional streamer looking for collaborations on FPS games.',
-        games: ['Valorant', 'Call of Duty', 'Apex Legends'],
-        language: 'English',
-        timezone: 'America/New_York',
-        availability: 'Weekday evenings'
-      },
-      {
-        id: 'test-2',
-        username: 'GamerGirl',
-        avatar_url: 'https://randomuser.me/api/portraits/women/44.jpg',
-        description: 'RPG specialist streaming since 2020. Looking for co-op partners.',
-        games: ['Elden Ring', 'Diablo IV', 'Final Fantasy'],
-        language: 'English',
-        timezone: 'Europe/London',
-        availability: 'Weekends'
-      }
-    ];
-    
-    setProfiles(testProfiles as Profile[]);
-  };
-
   useEffect(() => {
     if (currentUserId) {
       fetchProfiles();
     }
   }, [currentUserId]);
-
-  useEffect(() => {
-    // If we have no profiles after loading, add some test profiles
-    if (profiles.length === 0 && !isLoading) {
-      addTestProfilesIfEmpty();
-    }
-  }, [profiles, isLoading]);
 
   return {
     profiles,

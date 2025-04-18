@@ -98,7 +98,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_match: {
+        Args: { user_1: string; user_2: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
