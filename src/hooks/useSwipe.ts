@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Profile } from './useProfile';
@@ -90,32 +89,30 @@ export const useSwipe = (currentUserId: string) => {
 
         if (matchCheckError) {
           console.error('Error checking for match:', matchCheckError);
+          throw matchCheckError;
         }
 
         // For Connect button, we'll always display a success message
-        if (direction === 'right') {
-          if (matchData) {
-            console.log('Found a match!', matchData);
-            // Create a match
-            const { data: newMatch, error: matchError } = await supabase
-              .from('matches')
-              .insert({ 
-                user_a: currentUserId, 
-                user_b: targetId 
-              })
-              .select();
+        if (matchData) {
+          console.log('Found a mutual match! Creating match record...');
+          
+          // Call the create_match RPC function
+          const { data: newMatch, error: matchError } = await supabase
+            .rpc('create_match', { 
+              user_1: currentUserId, 
+              user_2: targetId 
+            });
 
-            if (matchError) {
-              console.error('Error creating match:', matchError);
-              throw matchError;
-            }
-            
-            console.log('Match created successfully:', newMatch);
-            toast.success("¡Es un match! 🎮");
-          } else {
-            console.log('No mutual match found with this profile');
-            toast.success("Connection request sent!");
+          if (matchError) {
+            console.error('Error creating match:', matchError);
+            throw matchError;
           }
+          
+          console.log('Match created successfully:', newMatch);
+          toast.success("¡Es un match! 🎮");
+        } else {
+          console.log('No mutual match found with this profile');
+          toast.success("Connection request sent!");
         }
       }
 
